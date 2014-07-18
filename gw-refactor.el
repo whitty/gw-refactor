@@ -24,11 +24,12 @@
 ;;;
 
 (require 'cc-mode)
+(require 'thingatpt)
 
 (defun brace-pop()
   "Remove a brace and unindent."
   (interactive)
-  (let* ((start (point))
+  (let ((start (point))
          (end nil))
     (save-excursion
       (forward-sexp)
@@ -40,26 +41,56 @@
     )
   )
 
+;; (defun dump-things ()
+;;   "debugging aid"
+;;   (message "sexp=%s" (thing-at-point 'sexp))
+;;   (message "w=%s" (thing-at-point 'word))
+;;   (message "sym=%s" (thing-at-point 'symbol))
+;;   (message "syn=%s" (thing-at-point 'syntax))
+;;   (message "list=%s" (thing-at-point 'list))
+;;   (message "ws=%s" (thing-at-point 'white-space))
+;; )
+
 (defun if-switch()
-  "Switch if/else statements."
+  "Switch if/else statements.
+
+Cursor must be on the 'if', and must use braces around both
+branches.
+
+Probably won't work with 'else if'
+  "
   (interactive)
+  (if (or (not (string-equal "if" (thing-at-point 'word)))
+          (not (or (string-equal "i" (thing-at-point 'char))
+                   (string-equal "f" (thing-at-point 'char)))))
+      (error "Cursor not on 'if'"))
+
+  ;; TODO add a "!" to the if
+  ;;    (save-excursion
+  ;;      (forward-sexp)
+  ;;      )
   (save-excursion
-    ;; TODO add a "!" to the if
-    ;;    (save-excursion
-    ;;      (forward-sexp)
-    ;;      )
+    (forward-sexp)                      ; the if
+    (forward-sexp)                      ; the (condition)
+
+    ;; skip ahead to check for 'else'
     (save-excursion
-      (forward-sexp)
-      (forward-sexp)
-      (kill-sexp) ; kill the if
-      (forward-sexp)
-      (yank) ; drop the if
-      (kill-sexp) ; kill the else
+      (forward-sexp)                    ; skip if-clause
+      (forward-symbol 1)
+      (if (not (string-equal "else" (thing-at-point 'symbol)))
+          (error "No else clause"))
       )
+
+    ;; back on the if clause
+    (kill-sexp)                         ; kill the if-clause
     (forward-sexp)
-    (forward-sexp)
-    (yank)
+    (yank)                              ; drop the if-clause
+    (kill-sexp)                         ; kill the else-clause
     )
+  ;; back at the start
+  (forward-sexp)
+  (forward-sexp)
+  (yank)
   )
 
 (provide 'gw-refactor)

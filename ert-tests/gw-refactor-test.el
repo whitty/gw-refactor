@@ -6,9 +6,11 @@
 (require 'gw-refactor)
 
 ;;; helpers
-(defun with-buffer-value (orig body)
+(defun with-buffer-value (orig body &optional setup)
   "run body against buffer containing string orig"
   (with-temp-buffer
+    (if setup
+        (funcall setup))
     (goto-char (point-min))
     (insert orig)
     (goto-char (point-min))
@@ -23,9 +25,9 @@
     (insert-file-contents-literally file nil nil nil t)
     (buffer-string)))
 
-(defun with-buffer-file (file body)
+(defun with-buffer-file (file body &optional setup)
   "run body against buffer containing contents of file"
-  (with-buffer-value (file-contents file) body))
+  (with-buffer-value (file-contents file) body setup))
 
 
 ;;; interactive
@@ -36,7 +38,7 @@
 
 ;;; noninteractive
 (ert-deftest if-switch-test nil
-  "This test should run on Travis"
+  "Basic if switches"
   (should (equal (with-buffer-file
                   "fixtures/if_test_01.c"
                   (lambda ()
@@ -47,7 +49,76 @@
                     (if-switch)
                     ))
                  (file-contents "fixtures/if_test_01_exp.c")))
+)
+
+(ert-deftest if-switch-test-on-f nil
+  "if-switch should work on either the `i` or the `f` of `if`"
+  (should (equal (with-buffer-file
+                  "fixtures/if_test_01.c"
+                  (lambda ()
+                    ;; move to the end of second if (ie the 'f')
+                    (word-search-forward "if" nil nil 2)
+                    (backward-char)
+                    ;; run if-switch
+                    (if-switch)
+                    ))
+                 (file-contents "fixtures/if_test_01_exp.c")))
+)
+
+(ert-deftest if-switch-test-not-on-if nil
+  "Should error if not on `if`"
+  (should (equal 
+           (first (last 
+                   (should-error (with-buffer-file
+                                  "fixtures/if_test_01.c"
+                                  (lambda ()
+                                    ;; move to after the second if
+                                    (word-search-forward "if" nil nil 2)
+                                    ;;(backward-word)
+                                    ;; run if-switch
+                                    (if-switch)
+                                    ))
+                                 :type 'error)))
+           "Cursor not on 'if'"))
   )
+
+(ert-deftest if-switch-test-no-else-clause nil
+  "This test should run on Travis"
+  (should (equal 
+           (first (last 
+                   (should-error (with-buffer-file
+                                  "fixtures/if_test_01.c"
+                                  (lambda ()
+                                    ;; move to the first if (no else)
+                                    (word-search-forward "if" nil nil 1)
+                                    (backward-word)
+                                    ;; run if-switch
+                                    (if-switch)
+                                    ))
+                                 :type 'error)))
+           "No else clause"))
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; brace-pop tests
+(ert-deftest brace-pop-test nil
+  "Basic if switches"
+  (message "%s" "NOTE: current test accepts some whitespace that should be removed in later revisions")
+  (should (equal (with-buffer-file
+                  "fixtures/brace_pop_01.c"
+                  (lambda ()
+                    ;; move to start of second {
+                    (search-forward "{" nil nil 2)
+                    (backward-char)
+                    ;; run if-switch
+                    (brace-pop)
+                    )
+                  ;; configure buffer
+                  (lambda () (c-mode)
+                    (setq c-basic-offset 2)))
+
+                 (file-contents "fixtures/brace_pop_01_exp.c")))
+)
 
 
 ;;
