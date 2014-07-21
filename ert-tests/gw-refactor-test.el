@@ -117,7 +117,6 @@
 ;; brace-pop tests
 (ert-deftest brace-pop-test nil
   "Basic if switches"
-  (message "%s" "NOTE: current test accepts some whitespace that should be removed in later revisions")
   (should (equal (with-buffer-file
                   "fixtures/brace_pop_01.c"
                   (lambda ()

@@ -30,7 +30,7 @@
   "Remove a brace and unindent."
   (interactive)
   (let ((start (point))
-         (end nil))
+        (end nil))
     (save-excursion
       (forward-sexp)
       (setq end (point))
@@ -38,6 +38,13 @@
       )
     (delete-char 1)
     (indent-rigidly start end (- 0 c-basic-offset))
+    ;; try to clean remaining whitepsace
+    (let ((pos (line-end-position)))
+      (beginning-of-line)
+      (if (re-search-forward " +$" (line-end-position))
+          (delete-region (match-beginning 0) (match-end 0))
+        )
+      )
     )
   )
 
