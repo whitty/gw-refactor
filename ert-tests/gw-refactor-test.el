@@ -51,6 +51,20 @@
                  (file-contents "fixtures/if_test_01_exp.c")))
 )
 
+(ert-deftest if-switch-test-2 nil
+  "Basic if switches"
+  (should (equal (with-buffer-file
+                  "fixtures/if_test_02.c"
+                  (lambda ()
+                    ;; move to start of second if
+                    (word-search-forward "if" nil nil 2)
+                    (backward-word)
+                    ;; run if-switch
+                    (if-switch)
+                    ))
+                 (file-contents "fixtures/if_test_02_exp.c")))
+)
+
 (ert-deftest if-switch-test-on-f nil
   "if-switch should work on either the `i` or the `f` of `if`"
   (should (equal (with-buffer-file
