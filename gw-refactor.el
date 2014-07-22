@@ -59,47 +59,70 @@
 ;;   (message "ws=%s" (thing-at-point 'white-space))
 ;; )
 
-(defun if-switch()
+(defun if-switch- (fix-cond)
+  ;; Check that curor is on if
+  (if (or (not (string-equal "if" (thing-at-point 'word)))
+          (not (or (string-equal "i" (thing-at-point 'char))
+                   (string-equal "f" (thing-at-point 'char)))))
+      (error "Cursor not on 'if'"))
+
+  ;; do the 'if' switch
+  (save-excursion
+    (save-excursion
+      (forward-sexp)                    ; the if
+      (forward-sexp)                    ; the (condition)
+      ;; skip ahead to check for 'else'
+      (save-excursion
+        (forward-sexp)                  ; skip if-clause
+        (forward-symbol 1)
+        (if (not (string-equal "else" (thing-at-point 'symbol)))
+            (error "No else clause"))
+        )
+
+      ;; back on the if clause
+      (kill-sexp)                       ; kill the if-clause
+      (forward-sexp)
+      (yank)                            ; drop the if-clause
+      (kill-sexp)                       ; kill the else-clause
+      )
+    ;; back at the start
+    (forward-sexp)
+    (forward-sexp)
+    (yank)
+    )
+
+  ;; Invert the cond
+  (if fix-cond
+      (progn
+        (forward-sexp)                  ; the if
+        (forward-sexp)                  ; the (condition)
+
+        (let ((orig (progn (beginning-of-sexp) (point))))
+          (end-of-sexp)
+          (insert ")")
+          (goto-char orig)
+          (forward-char)
+          (insert "!("))))
+  )
+
+(defun if-switch ()
   "Switch if/else statements.
 
 Cursor must be on the 'if', and must use braces around both
 branches.
 
 Probably won't work with 'else if'
-  "
-  (interactive)
-  (if (or (not (string-equal "if" (thing-at-point 'word)))
-          (not (or (string-equal "i" (thing-at-point 'char))
-                   (string-equal "f" (thing-at-point 'char)))))
-      (error "Cursor not on 'if'"))
+  " (if-switch- nil))
 
-  ;; TODO add a "!" to the if
-  ;;    (save-excursion
-  ;;      (forward-sexp)
-  ;;      )
-  (save-excursion
-    (forward-sexp)                      ; the if
-    (forward-sexp)                      ; the (condition)
+(defun if-switch-cond ()
+  "Switch if/else statements and invert the condition.
 
-    ;; skip ahead to check for 'else'
-    (save-excursion
-      (forward-sexp)                    ; skip if-clause
-      (forward-symbol 1)
-      (if (not (string-equal "else" (thing-at-point 'symbol)))
-          (error "No else clause"))
-      )
+Cursor must be on the 'if', and must use braces around both
+branches.
 
-    ;; back on the if clause
-    (kill-sexp)                         ; kill the if-clause
-    (forward-sexp)
-    (yank)                              ; drop the if-clause
-    (kill-sexp)                         ; kill the else-clause
-    )
-  ;; back at the start
-  (forward-sexp)
-  (forward-sexp)
-  (yank)
-  )
+Probably won't work with 'else if'
+  " (if-switch- t))
+
 
 (provide 'gw-refactor)
 

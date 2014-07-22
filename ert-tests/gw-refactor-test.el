@@ -64,6 +64,21 @@
   (basic-if-switch-test 'if-switch
                   "fixtures/if_test_03.c" "fixtures/if_test_03_exp.c"))
 
+(ert-deftest if-switch-cond-test nil
+  "Basic if switches"
+  (basic-if-switch-test 'if-switch-cond
+                  "fixtures/if_test_01.c" "fixtures/if_test_01_cond_exp.c"))
+
+(ert-deftest if-switch-cond-test-2 nil
+  "Basic if switches (hanging brace on else)"
+  (basic-if-switch-test 'if-switch-cond
+                  "fixtures/if_test_02.c" "fixtures/if_test_02_cond_exp.c"))
+
+(ert-deftest if-switch-cond-test-3 nil
+  "Hanging multiline condition"
+  (basic-if-switch-test 'if-switch-cond
+                  "fixtures/if_test_03.c" "fixtures/if_test_03_cond_exp.c"))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; negative tests
 (ert-deftest if-switch-test-on-f nil
