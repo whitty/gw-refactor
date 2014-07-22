@@ -41,7 +41,7 @@
     ;; try to clean remaining whitepsace
     (let ((pos (line-end-position)))
       (beginning-of-line)
-      (if (re-search-forward " +$" (line-end-position))
+      (if (re-search-forward " +$" (line-end-position) t)
           (delete-region (match-beginning 0) (match-end 0))
         )
       )
@@ -50,6 +50,7 @@
 
 ;; (defun dump-things ()
 ;;   "debugging aid"
+;;   (message "c=%s" (thing-at-point 'char))
 ;;   (message "sexp=%s" (thing-at-point 'sexp))
 ;;   (message "w=%s" (thing-at-point 'word))
 ;;   (message "sym=%s" (thing-at-point 'symbol))

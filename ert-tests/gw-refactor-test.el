@@ -37,34 +37,35 @@
   (should t))
 
 ;;; noninteractive
+(defun basic-if-switch-test (fn file1 file2)
+  (should (equal
+           (with-buffer-file file1
+                             (lambda ()
+                               ;; move to start of second if
+                               (word-search-forward "if" nil nil 2)
+                               (backward-word)
+                               ;; run if-switch
+                               (funcall fn)
+                               ))
+           (file-contents file2))))
+
 (ert-deftest if-switch-test nil
   "Basic if switches"
-  (should (equal (with-buffer-file
-                  "fixtures/if_test_01.c"
-                  (lambda ()
-                    ;; move to start of second if
-                    (word-search-forward "if" nil nil 2)
-                    (backward-word)
-                    ;; run if-switch
-                    (if-switch)
-                    ))
-                 (file-contents "fixtures/if_test_01_exp.c")))
-)
+  (basic-if-switch-test 'if-switch
+                  "fixtures/if_test_01.c" "fixtures/if_test_01_exp.c"))
 
 (ert-deftest if-switch-test-2 nil
-  "Basic if switches"
-  (should (equal (with-buffer-file
-                  "fixtures/if_test_02.c"
-                  (lambda ()
-                    ;; move to start of second if
-                    (word-search-forward "if" nil nil 2)
-                    (backward-word)
-                    ;; run if-switch
-                    (if-switch)
-                    ))
-                 (file-contents "fixtures/if_test_02_exp.c")))
-)
+  "Basic if switches (hanging brace on else)"
+  (basic-if-switch-test 'if-switch
+                  "fixtures/if_test_02.c" "fixtures/if_test_02_exp.c"))
 
+(ert-deftest if-switch-test-3 nil
+  "Hanging multiline condition"
+  (basic-if-switch-test 'if-switch
+                  "fixtures/if_test_03.c" "fixtures/if_test_03_exp.c"))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;; negative tests
 (ert-deftest if-switch-test-on-f nil
   "if-switch should work on either the `i` or the `f` of `if`"
   (should (equal (with-buffer-file
