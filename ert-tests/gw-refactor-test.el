@@ -37,6 +37,14 @@
   (should t))
 
 ;;; noninteractive
+(ert-deftest if-switch-is-interactive nil
+  "if-switch is interactive"
+  (should (interactive-form 'if-switch)))
+
+(ert-deftest if-switch-cond-is-interactive nil
+  "if-switch-cond is interactive"
+  (should (interactive-form 'if-switch-cond)))
+
 (defun basic-if-switch-test (fn file1 file2)
   (should (equal
            (with-buffer-file file1
@@ -131,6 +139,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; brace-pop tests
+(ert-deftest brace-pop-is-interactive nil
+  "brace-pop is interactive"
+  (should (interactive-form 'brace-pop)))
+
 (ert-deftest brace-pop-test nil
   "Basic if switches"
   (should (equal (with-buffer-file
@@ -139,7 +151,7 @@
                     ;; move to start of second {
                     (search-forward "{" nil nil 2)
                     (backward-char)
-                    ;; run if-switch
+                    ;; run brace-pop
                     (brace-pop)
                     )
                   ;; configure buffer

@@ -112,7 +112,9 @@ Cursor must be on the 'if', and must use braces around both
 branches.
 
 Probably won't work with 'else if'
-  " (if-switch- nil))
+  "
+  (interactive)
+  (if-switch- nil))
 
 (defun if-switch-cond ()
   "Switch if/else statements and invert the condition.
@@ -121,7 +123,9 @@ Cursor must be on the 'if', and must use braces around both
 branches.
 
 Probably won't work with 'else if'
-  " (if-switch- t))
+  "
+  (interactive)
+  (if-switch- t))
 
 
 (provide 'gw-refactor)
